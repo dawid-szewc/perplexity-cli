@@ -18,9 +18,9 @@ Perplexity CLI is a simple and convenient command-line client for the Perplexity
 No installation is required. You can run the script directly from the GitHub repository or install it locally.Example of local installation:
 
 ```bash
-curl -s https://raw.githubusercontent.com/dawid-szewc/perplexity-cli/main/perplexity.py > ~/.local/bin/perplexity \
-chmod +x ~/.local/bin/perplexity \
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc \
+curl -s https://raw.githubusercontent.com/dawid-szewc/perplexity-cli/main/perplexity.py > ~/.local/bin/perplexity && \
+chmod +x ~/.local/bin/perplexity && \
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && \
 echo 'export PERPLEXITY_API_KEY="your-api-key"' >> ~/.bashrc
 ```
 ## Usage
