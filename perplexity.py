@@ -96,7 +96,7 @@ class Perplexity:
                 logger.debug("Api key not found on system!")
                 raise ApiKeyNotFoundException
             else:
-                logger.debug(f"Api key found on system: {api_key}")
+                logger.debug("Api key found on system")
                 self.setup.api_key = api_key
         else:
             self.setup.api_key = args.api_key
@@ -107,7 +107,7 @@ class Perplexity:
             "content-type": "application/json",
             "Authorization": f"Bearer {self.setup.api_key}",
         }
-        logger.debug(f"Headers: {headers}")
+        logger.debug("Request headers prepared (Authorization header redacted for security)")
         query_data = {
             "model": self.setup.model,
             "messages": [
@@ -115,10 +115,10 @@ class Perplexity:
                 {"role": "user", "content": message},
             ],
         }
-        logger.debug(f"Query data: {query_data}")
+        logger.debug(f"Query data prepared for model: {self.setup.model}")
 
         response = requests.post(
-            self.setup.api_url, headers=headers, data=json.dumps(query_data)
+            self.setup.api_url, headers=headers, data=json.dumps(query_data), timeout=30
         )
 
         if response.status_code == 200:
@@ -191,7 +191,8 @@ def main() -> None:
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
-    logger.debug(f"args: {args}")
+    # Avoid logging sensitive args like api_key and potentially sensitive query content
+    logger.debug(f"args: model={args.model}, verbose={args.verbose}, usage={args.usage}, citations={args.citations}, glow={args.glow}")
     try:
         perplexity = Perplexity(args)
         perplexity.get_response(args.query)
