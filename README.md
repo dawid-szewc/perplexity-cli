@@ -15,14 +15,45 @@ Perplexity CLI is a simple and convenient command-line client for the Perplexity
 -   `requests` library
 
 ## Installation
-No installation is required. You can run the script directly from the GitHub repository or install it locally.Example of local installation:
+No installation is required. You can run the script directly from the GitHub repository or install it locally.
 
+### Quick Installation (curl)
 ```bash
 curl -s https://raw.githubusercontent.com/dawid-szewc/perplexity-cli/main/perplexity.py > ~/.local/bin/perplexity \
 chmod +x ~/.local/bin/perplexity \
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc \
 echo 'export PERPLEXITY_API_KEY="your-api-key"' >> ~/.bashrc
 ```
+
+### Alternative Installation (Clone Method)
+This method allows you to easily update the tool and keep track of changes. Similar to Oh My Zsh installation:
+
+1. Clone the repository:
+```bash
+git clone https://github.com/dawid-szewc/perplexity-cli.git ~/.perplexity-cli
+```
+
+2. Add the following lines to your `~/.bashrc` or `~/.zshrc`:
+```bash
+# Perplexity CLI
+export PERPLEXITY_API_KEY="your-api-key"
+alias perplexity="python3 $HOME/.perplexity-cli/perplexity.py"
+```
+
+3. Apply the changes:
+```bash
+# For Bash
+source ~/.bashrc
+
+# For Zsh
+source ~/.zshrc
+```
+
+4. To update Perplexity CLI in the future, simply run:
+```bash
+cd ~/.perplexity-cli && git pull
+```
+
 ## Usage
 ```bash
 perplexity "What is the meaning of life?"
