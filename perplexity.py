@@ -14,6 +14,13 @@ AVAILABLE_MODELS = [
     "sonar"
 ]
 
+# Файл истории и настройки
+HISTORY_FILE = os.path.expanduser(
+    os.environ.get("PERPLEXITY_HISTORY_FILE", "~/.config/perplexity/history.json")
+)
+# Сколько ходов диалога держать (user+assistant = 2 сообщения на ход)
+HISTORY_MAX_TURNS = int(os.environ.get("PERPLEXITY_HISTORY_TURNS", "10"))
+
 logger = logging.getLogger(__name__)
 
 
@@ -77,6 +84,32 @@ class ApiKeyValidator:
         return os.environ.get("PERPLEXITY_API_KEY")
 
 
+def load_history():
+    """Читает историю из файла и возвращает список messages (role/content)."""
+    if not os.path.exists(HISTORY_FILE):
+        return []
+    try:
+        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, list):
+            # Берём только последние N ходов (user+assistant)
+            max_msgs = 2 * HISTORY_MAX_TURNS
+            return data[-max_msgs:]
+    except Exception as e:
+        logger.debug(f"Failed to load history: {e}")
+    return []
+
+
+def save_history(messages):
+    """Сохраняет список messages (role/content) в файл истории."""
+    try:
+        os.makedirs(os.path.dirname(HISTORY_FILE), exist_ok=True)
+        with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(messages, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        logger.debug(f"Failed to save history: {e}")
+
+
 class Perplexity:
     def __init__(self, args) -> None:
         self.setup = ApiConfig
@@ -108,12 +141,16 @@ class Perplexity:
             "Authorization": f"Bearer {self.setup.api_key}",
         }
         logger.debug(f"Headers: {headers}")
+
+        # Загружаем историю и формируем messages
+        history_messages = load_history()
+        messages = [{"role": "system", "content": "Be precise and concise."}]
+        messages.extend(history_messages)
+        messages.append({"role": "user", "content": message})
+
         query_data = {
             "model": self.setup.model,
-            "messages": [
-                {"role": "system", "content": "Be precise and concise."},
-                {"role": "user", "content": message},
-            ],
+            "messages": messages,
         }
         logger.debug(f"Query data: {query_data}")
 
@@ -124,10 +161,18 @@ class Perplexity:
         if response.status_code == 200:
             result = response.json()
             if self.setup.citations:
-                self._show_citations(result["citations"], self.use_glow)
+                self._show_citations(result.get("citations", []), self.use_glow)
             if self.setup.usage:
-                self._show_usage(result["usage"], self.use_glow)
-            self._show_content(result["choices"][0]["message"]["content"])
+                self._show_usage(result.get("usage", {}), self.use_glow)
+
+            assistant_text = result["choices"][0]["message"]["content"]
+
+            # Обновляем историю (без system)
+            history_messages.append({"role": "user", "content": message})
+            history_messages.append({"role": "assistant", "content": assistant_text})
+            save_history(history_messages)
+
+            self._show_content(assistant_text)
         elif response.status_code == 401:
             display("Invalid api key! ", "red")
         else:
