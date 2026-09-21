@@ -106,6 +106,7 @@ class Perplexity:
             "accept": "application/json",
             "content-type": "application/json",
             "Authorization": f"Bearer {self.setup.api_key}",
+            "X-Pplx-Integration": "dawid-szewc-perplexity-cli",
         }
         logger.debug(f"Headers: {headers}")
         query_data = {
